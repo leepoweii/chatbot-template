@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chatbot Template</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <header class="topbar">
+    <div class="eyebrow">WELLY AI 顧問 · Chatbot Template</div>
+    <h1 class="h1">問我這個資料夾裡的事</h1>
+    <p class="body lede">右邊是實際跑的 <code>claude -p</code> 指令與 session_id——記憶交給 Claude Code harness 自己管，我們沒有另外刻資料庫。要換成你自己的知識庫，改 <code>.env</code> 的 <code>HARNESS_CWD</code>。</p>
+  </header>
+
+  <main class="stage">
+    <section class="panel chat-panel">
+      <div class="panel-head">
+        <span class="panel-title">對話</span>
+      </div>
+      <div id="session-row" class="session-row"></div>
+      <div id="chat-log" class="chat-log"></div>
+      <form id="chat-form" class="chat-form">
+        <input id="chat-input" class="chat-input" type="text" placeholder="輸入訊息…" autocomplete="off" required>
+        <button type="submit" class="btn-primary">送出</button>
+      </form>
+    </section>
+
+    <section class="panel payload-panel">
+      <div class="panel-head">
+        <span class="panel-title">實際執行的指令</span>
+      </div>
+      <p class="small">點上面的 session 切換，或開一個新的，親眼看記憶只跟著 session_id 走。</p>
+      <pre id="payload-view" class="payload-view">（還沒送出任何訊息）</pre>
+    </section>
+  </main>
+
+  <footer class="foot small">chatbot-template · leepoweii/chatbot-template</footer>
+
+  <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>

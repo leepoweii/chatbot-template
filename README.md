@@ -1,0 +1,54 @@
+# chatbot-template
+
+一個「資料夾即知識庫」的 agentic search chatbot 起手式。不用向量資料庫、不用 embedding
+——記憶跟檢索全部交給 Claude Code harness 自己管：後端只是 subprocess 呼叫 `claude -p`，
+cwd 指到一個有 `CLAUDE.md` 當索引的資料夾，Claude 自己會去讀資料回答問題。
+
+延伸自 [llm-memory-101](https://github.com/leepoweii/llm-memory-101) 情境 3（`claude -p` +
+`--resume` 做 session 記憶），把它包成一個可以直接拿去改的 chatbot 骨架。
+
+## 改成你自己的 chatbot（三步）
+
+1. 把你的文件丟進 `data/`（子資料夾也可以）
+2. 改根目錄 `CLAUDE.md`：一句話說這個 chatbot 是做什麼的、資料在哪裡
+3. 跑起來，開始問
+
+## 跑起來
+
+```bash
+uv sync
+cp .env.example .env
+uv run python run.py
+```
+
+開 http://127.0.0.1:5050
+
+需要本機已裝好且登入過 [Claude Code CLI](https://docs.anthropic.com/en/docs/claude-code)
+（`claude` 指令要在 PATH 上）。**每次呼叫都會真的燒 Claude 額度**，示範前抓一下大概成本。
+
+## 換成你自己的知識庫
+
+`.env` 的 `HARNESS_CWD` 留空時，預設指到這個 repo 自己的根目錄（也就是這份 `CLAUDE.md` +
+`data/`）。要換成別的資料夾——例如你自己另外整理的一份客戶資料——把 `HARNESS_CWD` 指過去，
+並確保那個資料夾裡也有一份 `CLAUDE.md` 當索引就好，程式碼不用改。
+
+## 測試
+
+```bash
+uv run pytest tests/ -v
+```
+
+全部是 mock 掉 `subprocess.run` 的單元測試，跑測試不會打真實 API、不燒額度。
+
+## 架構
+
+```
+src/chatbot_template/
+├── claude_harness.py   # 膠水層：subprocess 呼叫 claude -p，處理 --resume
+├── app.py               # 單一路由 Flask app
+├── templates/index.html
+└── static/{style.css,app.js}
+data/                    # 你的知識庫文件放這裡
+CLAUDE.md                # 知識庫索引（Claude 每次回答前會讀）
+tests/                   # 對應 claude_harness / app 兩支測試
+```
