@@ -22,20 +22,25 @@ import 清掉。也可以手動做，一樣三步：
 
 ```bash
 uv sync
-cp .env.example .env
 uv run python run.py
 ```
 
-開 http://127.0.0.1:5050
+開 http://127.0.0.1:5050——不用另外建 `.env`，預設值就能跑（下面「換成你自己的知識庫」再說明要改什麼）。
 
 需要本機已裝好且登入過 [Claude Code CLI](https://docs.anthropic.com/en/docs/claude-code)
-（`claude` 指令要在 PATH 上）。**每次呼叫都會真的燒 Claude 額度**，示範前抓一下大概成本。
+（`claude` 指令要在 PATH 上）。沒裝好會在啟動時直接報錯，不用等你送出第一句話才發現。
+**每次呼叫都會真的燒 Claude 額度**，示範前抓一下大概成本。
 
 ## 換成你自己的知識庫
 
+```bash
+cp .env.example .env
+```
+
 `.env` 的 `HARNESS_CWD` 留空時，預設指到這個 repo 自己的根目錄（也就是這份 `CLAUDE.md` +
 `data/`）。要換成別的資料夾——例如你自己另外整理的一份客戶資料——把 `HARNESS_CWD` 指過去，
-並確保那個資料夾裡也有一份 `CLAUDE.md` 當索引就好，程式碼不用改。
+並確保那個資料夾裡也有一份 `CLAUDE.md` 當索引就好，程式碼不用改。改完 `.env` 要重啟服務
+（環境變數只在啟動時讀一次）。
 
 ## 測試
 
@@ -49,11 +54,12 @@ uv run pytest tests/ -v
 
 ```
 src/chatbot_template/
-├── claude_harness.py   # 膠水層：subprocess 呼叫 claude -p，處理 --resume
+├── claude_harness.py   # 膠水層：subprocess 呼叫 claude -p，處理 --resume，錯誤訊息看得懂
+├── preflight.py         # 啟動前檢查 claude CLI 在不在 PATH 上
 ├── app.py               # 單一路由 Flask app
 ├── templates/index.html
 └── static/{style.css,app.js}
 data/                    # 你的知識庫文件放這裡
 CLAUDE.md                # 知識庫索引（Claude 每次回答前會讀）
-tests/                   # 對應 claude_harness / app 兩支測試
+tests/                   # 對應 claude_harness / app / preflight 三支測試
 ```

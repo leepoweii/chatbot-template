@@ -66,8 +66,8 @@ async function submitMessage(message) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ message, session_id: activeSessionId }),
   });
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
   const data = await res.json();
+  if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
 
   const isNewSession = activeSessionId === null;
   activeSessionId = data.session_id;

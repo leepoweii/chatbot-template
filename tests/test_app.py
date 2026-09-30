@@ -5,6 +5,7 @@ from unittest.mock import patch
 import pytest
 
 from chatbot_template.app import PROJECT_ROOT, create_app
+from chatbot_template.claude_harness import ChatbotHarnessError
 
 
 @pytest.fixture
@@ -61,3 +62,15 @@ def test_falls_back_to_project_root_when_harness_cwd_env_is_empty_string(mock_ca
     # 預設要指到隨包的 CLAUDE.md + data/，不是隨便一個 tempdir
     assert mock_call.call_args.kwargs["cwd"] == PROJECT_ROOT
     assert mock_call.call_args.kwargs["cwd"] != ""
+
+
+@patch("chatbot_template.app.call_claude_harness")
+def test_harness_error_becomes_a_readable_500_not_a_stack_trace(mock_call, client):
+    """非工程背景的人（例如種子自己）撞到沒登入/沒裝 CLI 時，前端要看得懂錯在哪，
+    不是一片看不懂的 500 HTML 錯誤頁。"""
+    mock_call.side_effect = ChatbotHarnessError("找不到 `claude` 指令，請先安裝並登入。")
+
+    r = client.post("/api/chat", json={"message": "哈囉", "session_id": None})
+
+    assert r.status_code == 500
+    assert r.get_json()["error"] == "找不到 `claude` 指令，請先安裝並登入。"

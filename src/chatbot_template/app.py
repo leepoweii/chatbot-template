@@ -7,7 +7,7 @@ from pathlib import Path
 
 from flask import Flask, jsonify, render_template, request
 
-from chatbot_template.claude_harness import call_claude_harness
+from chatbot_template.claude_harness import ChatbotHarnessError, call_claude_harness
 
 PROJECT_ROOT = str(Path(__file__).resolve().parent.parent.parent)
 
@@ -29,7 +29,10 @@ def create_app(testing: bool = False) -> Flask:
         這樣才能在同一個分頁裡開多個獨立 session、切換著問。"""
         message = request.json["message"]
         session_id = request.json.get("session_id")
-        outcome = call_claude_harness(message, session_id=session_id, cwd=harness_cwd)
+        try:
+            outcome = call_claude_harness(message, session_id=session_id, cwd=harness_cwd)
+        except ChatbotHarnessError as e:
+            return jsonify(error=str(e)), 500
         return jsonify(outcome)
 
     return app
