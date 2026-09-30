@@ -42,6 +42,21 @@ cp .env.example .env
 並確保那個資料夾裡也有一份 `CLAUDE.md` 當索引就好，程式碼不用改。改完 `.env` 要重啟服務
 （環境變數只在啟動時讀一次）。
 
+## 部署到區網讓同事連（跟課堂教的一樣）
+
+改 `.env`：
+
+```bash
+cp .env.example .env
+# 編輯 .env：HOST=0.0.0.0
+```
+
+`HOST` 一旦不是 `127.0.0.1`，就是開放給整個網段連——這時候**必須**二選一，否則直接拒絕啟動：
+- 設 `BASIC_AUTH_PASSWORD`（推薦；帳號固定是 `welly`，同事連上會被問密碼）
+- 或明確設 `ALLOW_INSECURE_LAN=true`（你確定這個網路安全、不想要密碼）
+
+這個檢查是刻意做成「擋住裸奔的組合」，不是自動幫你上鎖——你還是要自己決定要不要設密碼。
+
 ## 測試
 
 ```bash
@@ -56,10 +71,11 @@ uv run pytest tests/ -v
 src/chatbot_template/
 ├── claude_harness.py   # 膠水層：subprocess 呼叫 claude -p，處理 --resume，錯誤訊息看得懂
 ├── preflight.py         # 啟動前檢查 claude CLI 在不在 PATH 上
+├── security.py          # LAN 曝露檢查＋Basic Auth（見上面「部署到區網」）
 ├── app.py               # 單一路由 Flask app
 ├── templates/index.html
 └── static/{style.css,app.js}
 data/                    # 你的知識庫文件放這裡
 CLAUDE.md                # 知識庫索引（Claude 每次回答前會讀）
-tests/                   # 對應 claude_harness / app / preflight 三支測試
+tests/                   # 對應 claude_harness / app / preflight / security 四支測試
 ```

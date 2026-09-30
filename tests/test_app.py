@@ -74,3 +74,44 @@ def test_harness_error_becomes_a_readable_500_not_a_stack_trace(mock_call, clien
 
     assert r.status_code == 500
     assert r.get_json()["error"] == "找不到 `claude` 指令，請先安裝並登入。"
+
+
+def test_no_auth_required_when_basic_auth_password_env_not_set(monkeypatch):
+    monkeypatch.delenv("BASIC_AUTH_PASSWORD", raising=False)
+    app = create_app(testing=True)
+    app.config["SECRET_KEY"] = "test-secret"
+    with app.test_client() as client:
+        assert client.get("/").status_code == 200
+
+
+def test_rejects_requests_without_credentials_when_basic_auth_password_set(monkeypatch):
+    monkeypatch.setenv("BASIC_AUTH_PASSWORD", "s3cr3t")
+    app = create_app(testing=True)
+    app.config["SECRET_KEY"] = "test-secret"
+    with app.test_client() as client:
+        r = client.get("/")
+        assert r.status_code == 401
+
+
+def test_accepts_requests_with_correct_credentials_when_basic_auth_password_set(monkeypatch):
+    import base64
+
+    monkeypatch.setenv("BASIC_AUTH_PASSWORD", "s3cr3t")
+    app = create_app(testing=True)
+    app.config["SECRET_KEY"] = "test-secret"
+    creds = base64.b64encode(b"welly:s3cr3t").decode()
+    with app.test_client() as client:
+        r = client.get("/", headers={"Authorization": f"Basic {creds}"})
+        assert r.status_code == 200
+
+
+def test_rejects_wrong_password_when_basic_auth_password_set(monkeypatch):
+    import base64
+
+    monkeypatch.setenv("BASIC_AUTH_PASSWORD", "s3cr3t")
+    app = create_app(testing=True)
+    app.config["SECRET_KEY"] = "test-secret"
+    creds = base64.b64encode(b"welly:wrong").decode()
+    with app.test_client() as client:
+        r = client.get("/", headers={"Authorization": f"Basic {creds}"})
+        assert r.status_code == 401
