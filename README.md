@@ -7,10 +7,15 @@ cwd 指到一個有 `CLAUDE.md` 當索引的資料夾，Claude 自己會去讀�
 延伸自 [llm-memory-101](https://github.com/leepoweii/llm-memory-101) 情境 3（`claude -p` +
 `--resume` 做 session 記憶），把它包成一個可以直接拿去改的 chatbot 骨架。
 
-## 改成你自己的 chatbot（三步）
+## 改成你自己的 chatbot
+
+在這個資料夾裡開 `claude`，跟它說「幫我設定這個 chatbot」——`CLAUDE.md` 最上面 import 了
+`init.md`，會自動引導你（要回答什麼問題、資料放哪），設定完會自己把 `init.md` 跟那行
+import 清掉。也可以手動做，一樣三步：
 
 1. 把你的文件丟進 `data/`（子資料夾也可以）
-2. 改根目錄 `CLAUDE.md`：一句話說這個 chatbot 是做什麼的、資料在哪裡
+2. 改根目錄 `CLAUDE.md`：一句話說這個 chatbot 是做什麼的、資料在哪裡（順便刪掉 `init.md`
+   跟 `@init.md` 那行，已經用不到了）
 3. 跑起來，開始問
 
 ## 跑起來
