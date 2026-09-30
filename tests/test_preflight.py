@@ -13,6 +13,7 @@ def test_passes_silently_when_claude_is_on_path(mock_which):
 @patch("chatbot_template.preflight.shutil.which", return_value=None)
 def test_raises_a_readable_message_when_claude_is_missing(mock_which):
     import pytest
+
     from chatbot_template.preflight import ClaudeCliMissingError
 
     with pytest.raises(ClaudeCliMissingError, match="claude"):

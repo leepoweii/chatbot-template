@@ -9,14 +9,14 @@ cwd 指到一個有 `CLAUDE.md` 當索引的資料夾，Claude 自己會去讀�
 
 ## 改成你自己的 chatbot
 
-在這個資料夾裡開 `claude`，跟它說「幫我設定這個 chatbot」——`CLAUDE.md` 最上面 import 了
-`init.md`，會自動引導你（要回答什麼問題、資料放哪），設定完會自己把 `init.md` 跟那行
-import 清掉。也可以手動做，一樣三步：
+在這個資料夾裡開 `claude`，跟它說一句話（例如「幫我設定這個 chatbot」）——`CLAUDE.md`
+最上面是路由，會自動呼叫 `bootstrap-chatbot` skill 引導你：確認你是不是還在範本上（是
+的話先幫你建自己的 repo）、問到「這個 chatbot 要做什麼」的邊界收斂、幫你把資料準備好、
+最後 commit 一個乾淨的起點。
 
-1. 把你的文件丟進 `data/`（子資料夾也可以）
-2. 改根目錄 `CLAUDE.md`：一句話說這個 chatbot 是做什麼的、資料在哪裡（順便刪掉 `init.md`
-   跟 `@init.md` 那行，已經用不到了）
-3. 跑起來，開始問
+設定好之後，之後每次想加新功能都直接跟 `claude` 說你想要什麼——`build-wish` skill 會
+接手：開一個獨立的 worktree／branch 讓 subagent 動手做、做完起一個 dev server 讓你自己
+點過一輪，你確認堪用才會合併回來。main 分支永遠是最後一個你確認過能動的版本。
 
 ## 跑起來
 
@@ -57,17 +57,22 @@ cp .env.example .env
 
 這個檢查是刻意做成「擋住裸奔的組合」，不是自動幫你上鎖——你還是要自己決定要不要設密碼。
 
-## 測試
+## 測試 + Lint
 
 ```bash
+uv run ruff check .
 uv run pytest tests/ -v
 ```
 
-全部是 mock 掉 `subprocess.run` 的單元測試，跑測試不會打真實 API、不燒額度。
+測試全部是 mock 掉 `subprocess.run` 的單元測試，跑測試不會打真實 API、不燒額度。
+`build-wish` 每次許願完成前都會跑這兩個，兩個都要乾淨才算做完。
 
 ## 架構
 
 ```
+.claude/skills/
+├── bootstrap-chatbot/   # 一次性起步：範本偵測、grill 邊界、準備資料、commit 乾淨起點
+└── build-wish/          # 每次新功能許願：worktree + subagent 實作 + dev server 點測 + 才 merge
 src/chatbot_template/
 ├── claude_harness.py   # 膠水層：subprocess 呼叫 claude -p，處理 --resume，錯誤訊息看得懂
 ├── preflight.py         # 啟動前檢查 claude CLI 在不在 PATH 上
@@ -76,6 +81,6 @@ src/chatbot_template/
 ├── templates/index.html
 └── static/{style.css,app.js}
 data/                    # 你的知識庫文件放這裡
-CLAUDE.md                # 知識庫索引（Claude 每次回答前會讀）
+CLAUDE.md                # 啟動路由 + 知識庫索引 + 開發慣例（Claude 每次都會讀）
 tests/                   # 對應 claude_harness / app / preflight / security 四支測試
 ```

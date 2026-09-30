@@ -5,7 +5,7 @@
 不是一路往上炸的 Python traceback：沒裝 CLI、沒登入（輸出不是 JSON）、執行失敗。"""
 import json
 import subprocess
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
 import pytest
 
